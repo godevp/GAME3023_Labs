@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class MusicManager : MonoBehaviour
 {
+    public bool stopCouratine = false;
     public enum TrackID
     {
         OutOfCollision,
@@ -69,15 +70,20 @@ public class MusicManager : MonoBehaviour
         {
             oldTrack = aSource1;
             newTrack = aSource2;
+          //  stopCouratine = true;
         }
         if(aSource2.isPlaying)
         {
             oldTrack = aSource2;
             newTrack = aSource1;
+            //stopCouratine = true;
         }
         newTrack.clip = musicTracks[(int)ToTrackID];
         newTrack.Play();
-
+        newTrack.volume = 0;
+        oldTrack.volume = 1;
+        
+        StopCoroutine(CrossFadeCrouratine(oldTrack, newTrack, transitionDuration));
         StartCoroutine(CrossFadeCrouratine(oldTrack, newTrack, transitionDuration));
     }
 
@@ -86,10 +92,17 @@ public class MusicManager : MonoBehaviour
         float time = 0.0f;
         while(time < transitionDuration)
         {
+            if(stopCouratine)
+            {
+                stopCouratine=false;
+                oldTrack.Stop();
+                break;
+            }
             float tValue = Mathf.Min(time / transitionDuration, 1.0f);
             newTrack.volume = tValue;
             oldTrack.volume = 1 - tValue;
             time += Time.deltaTime;
+            
             yield return new WaitForEndOfFrame();
         }
         oldTrack.Stop();
